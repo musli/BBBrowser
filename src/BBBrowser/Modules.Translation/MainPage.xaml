@@ -208,6 +208,17 @@
                             </MenuItem.Header>
                         </MenuItem>
                         <MenuItem Header="打开开发人员工具" Click="MenuItem_Click"></MenuItem>
+                        <MenuItem Header="关于" Click="aboutMenuItem_Click"></MenuItem>
+                        <MenuItem>
+                            <MenuItem.Header>
+                                <Hyperlink NavigateUri="https://space.bilibili.com/17676259" Click="Hyperlink_Click">了解更多UP主开发的小工具</Hyperlink>
+                            </MenuItem.Header>
+                        </MenuItem>
+                        <MenuItem>
+                            <MenuItem.Header>
+                                <Hyperlink NavigateUri="https://github.com/musli/BBBrowser" Click="Hyperlink_Click">项目开源地址</Hyperlink>
+                            </MenuItem.Header>
+                        </MenuItem>
                     </ContextMenu>
                 </ToggleButton.ContextMenu>
             </ToggleButton>

@@ -8,6 +8,7 @@ packages
 /*.suo
 /*.vs
 /*.user
+.user
 .vs
 /src/DeskBand/DeskBand/*.user
 /src/FloatingWindowTool/TouchFishBrowserPackage/AppPackages

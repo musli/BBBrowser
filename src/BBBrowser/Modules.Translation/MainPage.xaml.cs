@@ -194,21 +194,9 @@ namespace Modules.Translation
         {
             if (appearance.IsLeaveHidePlay)
             {
-                int commandId = 0;
-                if (((bool)e.NewValue))
-                {
-                    commandId = (int)AppComandCode.MEDIA_PLAY;
-                    Debug.WriteLine("true");
-                }
-                else
-                {
-                    commandId = (int)AppComandCode.MEDIA_PAUSE;
-                    Debug.WriteLine("false");
-                }
                 var CommandID = (int)AppComandCode.MEDIA_PLAY_PAUSE << 16;
-                
                 IntPtr hwnd = new WindowInteropHelper(Application.Current.MainWindow).Handle;
-                User.SendMessage(hwnd, (uint)AppComandCode.WM_APPCOMMAND, IntPtr.Zero, (IntPtr)commandId);
+                User.SendMessage(hwnd, (uint)AppComandCode.WM_APPCOMMAND, hwnd, (IntPtr)CommandID);
             }
         }
 
@@ -353,7 +341,19 @@ namespace Modules.Translation
         /// <param name="e"></param>
         private void ButtonZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            Browser.ZoomLevel +=1;
+            Browser.ZoomLevel += 1;
+        }
+
+        /// <summary>
+        /// 关于按钮点击事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void aboutMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("软件名称：BB浏览器\r\n" +
+                "软件版本：v1.0\r\n" +
+                "开发者：穆斯穆斯理", "关于");
         }
         #endregion
 
@@ -426,9 +426,8 @@ namespace Modules.Translation
             }
             SaveConfig();
         }
+
         #endregion
-
-
     }
 
     /// <summary>
