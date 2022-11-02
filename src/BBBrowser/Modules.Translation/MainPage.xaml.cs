@@ -1,8 +1,11 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
 using CefSharp.Wpf.Internals;
+using Common;
+using Common.Model;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -25,7 +28,8 @@ namespace Modules.Translation
     public partial class MainPage : Page
     {
         #region Fields
-        Appearance appearance = null;
+
+        SettingWindow settingWindow = null;
         #endregion
 
         #region Methods
@@ -34,19 +38,19 @@ namespace Modules.Translation
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt";
             if (File.Exists(path))
-                appearance = JsonConvert.DeserializeObject<Appearance>(File.ReadAllText(path));
+                Common.Common.Appearance = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText(path));
             else
-                appearance = new Appearance() { Height = 500, Width = 800, Opactiy = 1, Url = "https://www.baidu.com" };
+                Common.Common.Appearance = new ConfigModel() { Height = 500, Width = 800, Opactiy = 1, Url = "https://www.baidu.com", HotKeys = Common.Common.LoadDefaultHotKey() };
             //https://cg.163.com/index.html#/search?key=%E5%86%B3%E6%96%97%E9%93%BE%E6%8E%A5
 
             CefSettings _settings = new CefSettings();
-            if (appearance.IsPhone)
+            if (Common.Common.Appearance.IsPhone)
                 _settings.UserAgent = "tv.danmaku.bili/6250300 (Linux; U; Android 11; zh_CN; V1824A; Build/RP1A.200720.012; Cronet/81.0.4044.156)";
             _settings.CachePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\Cache";
             Cef.Initialize(_settings);
 
             InitializeComponent();
-            Common.ContentPanel = ContentPanel;
+            CommonHelper.ContentPanel = ContentPanel;
             //Browser.RequestContext.LoadExtensionFromDirectory("",null);
             //支持中文输入，但是ime不能定位到光标位置，但是可以在popup里面输入中文
             Browser.WpfKeyboardHandler = new WpfKeyboardHandler(Browser);
@@ -58,9 +62,19 @@ namespace Modules.Translation
             //Browser.RequestHandler = new MyRequestHandler();
             //Browser.LoadHandler = new MyLoadHandler();
 
-            Browser.DataContext = menu.DataContext = appearance;
-            Application.Current.MainWindow.Top = appearance.Top;
-            Application.Current.MainWindow.Left = appearance.Left;
+            Browser.DataContext = menu.DataContext = Common.Common.Appearance;
+            Application.Current.MainWindow.Top = Common.Common.Appearance.Top;
+            Application.Current.MainWindow.Left = Common.Common.Appearance.Left;
+
+
+            //每次注册热键的时候都保存到配置
+            Common.Common.SaveConfig += () =>{SaveConfig();};
+
+            //程序运行的时候预先注册一次热键
+            settingWindow=new SettingWindow();
+            settingWindow.Owner = Application.Current.MainWindow;
+            var result = Common.Common.OnRegisterGlobalHotKey(Common.Common.Appearance.HotKeys);
+            if (!result) settingWindow.ShowDialog();
         }
 
 
@@ -69,12 +83,12 @@ namespace Modules.Translation
         /// </summary>
         private void SaveConfig()
         {
-            appearance.Top = (int)Application.Current.MainWindow.Top;
-            appearance.Left = (int)Application.Current.MainWindow.Left;
-            appearance.Url = Browser.Address;
+            Common.Common.Appearance.Top = (int)Application.Current.MainWindow.Top;
+            Common.Common.Appearance.Left = (int)Application.Current.MainWindow.Left;
+            Common.Common.Appearance.Url = Browser.Address;
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool"))
                 Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool");
-            File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt", JsonConvert.SerializeObject(appearance));
+            File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt", JsonConvert.SerializeObject(Common.Common.Appearance));
         }
         #endregion
 
@@ -192,7 +206,7 @@ namespace Modules.Translation
         /// <param name="e"></param>
         private void popBro_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (appearance.IsLeaveHidePlay)
+            if (Common.Common.Appearance.IsLeaveHidePlay)
             {
                 var CommandID = (int)AppComandCode.MEDIA_PLAY_PAUSE << 16;
                 IntPtr hwnd = new WindowInteropHelper(Application.Current.MainWindow).Handle;
@@ -209,15 +223,15 @@ namespace Modules.Translation
         private void btnMark_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(Browser.Address)) return;
-            if (appearance.BookmarkPages != null)
-                if (appearance.BookmarkPages.Where(u => u.Address.Equals(Browser.Address)).Any()) return;
+            if (Common.Common.Appearance.BookmarkPages != null)
+                if (Common.Common.Appearance.BookmarkPages.Where(u => u.Address.Equals(Browser.Address)).Any()) return;
             BookmarkWindow bookmarkWindow = new BookmarkWindow();
             bookmarkWindow.Owner = Application.Current.MainWindow;
             if (bookmarkWindow.ShowDialog().Value)
             {
-                if (appearance.BookmarkPages == null)
-                    appearance.BookmarkPages = new ObservableCollection<BookmarkPage>();
-                appearance.BookmarkPages.Add(new BookmarkPage() { Name = bookmarkWindow.txtName.Text, Address = Browser.Address });
+                if (Common.Common.Appearance.BookmarkPages == null)
+                    Common.Common.Appearance.BookmarkPages = new ObservableCollection<BookmarkPage>();
+                Common.Common.Appearance.BookmarkPages.Add(new BookmarkPage() { Name = bookmarkWindow.txtName.Text, Address = Browser.Address });
                 SaveConfig();
             }
         }
@@ -238,7 +252,7 @@ namespace Modules.Translation
         private void btnBookmarkDelete_Click(object sender, RoutedEventArgs e)
         {
             var data = (sender as Button).DataContext as BookmarkPage;
-            appearance.BookmarkPages.Remove(data);
+            Common.Common.Appearance.BookmarkPages.Remove(data);
             SaveConfig();
         }
         /// <summary>
@@ -258,18 +272,18 @@ namespace Modules.Translation
         /// <param name="e"></param>
         private void ComboBox_SourceUpdated(object sender, System.Windows.Data.DataTransferEventArgs e)
         {
-            switch (appearance.Scale)
+            switch (Common.Common.Appearance.Scale)
             {
                 case 0:
                     break;
                 case 1:
-                    appearance.Height = appearance.Width / 2.4 * 1;
+                    Common.Common.Appearance.Height = Common.Common.Appearance.Width / 2.4 * 1;
                     break;
                 case 2:
-                    appearance.Height = appearance.Width / 16 * 9;
+                    Common.Common.Appearance.Height = Common.Common.Appearance.Width / 16 * 9;
                     break;
                 case 3:
-                    appearance.Height = appearance.Width / 21 * 9;
+                    Common.Common.Appearance.Height = Common.Common.Appearance.Width / 21 * 9;
                     break;
             }
             SaveConfig();
@@ -299,7 +313,7 @@ namespace Modules.Translation
         /// <param name="e"></param>
         private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
         {
-            if (appearance.IsGray)
+            if (Common.Common.Appearance.IsGray)
                 Browser.GetMainFrame().EvaluateScriptAsync("var bodys = document.getElementsByTagName(\"html\")[0];  bodys.style.WebkitFilter = \"grayscale(100%) \";");
         }
 
@@ -355,6 +369,18 @@ namespace Modules.Translation
                 "软件版本：v1.0\r\n" +
                 "开发者：穆斯穆斯理", "关于");
         }
+
+        /// <summary>
+        /// 设置按钮点击事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SettingMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            settingWindow = new SettingWindow();
+            settingWindow.Owner = Application.Current.MainWindow;
+            settingWindow.ShowDialog();
+        }
         #endregion
 
         #region Commands
@@ -387,18 +413,18 @@ namespace Modules.Translation
         /// <param name="e"></param>
         private void verSli_SourceUpdated(object sender, System.Windows.Data.DataTransferEventArgs e)
         {
-            switch (appearance.Scale)
+            switch (Common.Common.Appearance.Scale)
             {
                 case 0:
                     break;
                 case 1:
-                    appearance.Width = appearance.Height / 1 * 2.4;
+                    Common.Common.Appearance.Width = Common.Common.Appearance.Height / 1 * 2.4;
                     break;
                 case 2:
-                    appearance.Width = appearance.Height / 9 * 16;
+                    Common.Common.Appearance.Width = Common.Common.Appearance.Height / 9 * 16;
                     break;
                 case 3:
-                    appearance.Width = appearance.Height / 9 * 21;
+                    Common.Common.Appearance.Width = Common.Common.Appearance.Height / 9 * 21;
                     break;
             }
             SaveConfig();
@@ -410,24 +436,33 @@ namespace Modules.Translation
         /// <param name="e"></param>
         private void hoSli_SourceUpdated(object sender, System.Windows.Data.DataTransferEventArgs e)
         {
-            switch (appearance.Scale)
+            switch (Common.Common.Appearance.Scale)
             {
                 case 0:
                     break;
                 case 1:
-                    appearance.Height = appearance.Width / 2.4 * 1;
+                    Common.Common.Appearance.Height = Common.Common.Appearance.Width / 2.4 * 1;
                     break;
                 case 2:
-                    appearance.Height = appearance.Width / 16 * 9;
+                    Common.Common.Appearance.Height = Common.Common.Appearance.Width / 16 * 9;
                     break;
                 case 3:
-                    appearance.Height = appearance.Width / 21 * 9;
+                    Common.Common.Appearance.Height = Common.Common.Appearance.Width / 21 * 9;
                     break;
             }
             SaveConfig();
         }
 
         #endregion
+
+        private void mainPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            Common.Common.ShowHide += () => { togBro.IsChecked = !togBro.IsChecked; };
+            Common.Common.OpacitySub += () => { Common.Common.Appearance.Opactiy -= 0.1; };
+            Common.Common.OpacityAdd += () => { Common.Common.Appearance.Opactiy += 0.1; };
+        }
+
+
     }
 
     /// <summary>
@@ -532,8 +567,8 @@ namespace Modules.Translation
                     popupChromiumWebBrowser.SetAsPopup();
                     popupChromiumWebBrowser.LifeSpanHandler = this;
                     popupChromiumWebBrowser.Opacity = 1;
-                    Common.ContentPanel.Children.Clear();
-                    Common.ContentPanel.Children.Add(popupChromiumWebBrowser);
+                    CommonHelper.ContentPanel.Children.Clear();
+                    CommonHelper.ContentPanel.Children.Add(popupChromiumWebBrowser);
 
 
                     var windowInteropHelper = new WindowInteropHelper(Application.Current.MainWindow);
@@ -576,191 +611,5 @@ namespace Modules.Translation
 
             return true;
         }
-    }
-    /// <summary>
-    /// 外观
-    /// </summary>
-    public class Appearance : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private string url;
-
-        public string Url
-        {
-            get { return url; }
-            set
-            {
-                url = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Url"));
-            }
-        }
-
-
-        private bool isPhone;
-
-        public bool IsPhone
-        {
-            get { return isPhone; }
-            set
-            {
-                isPhone = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsPhone"));
-            }
-        }
-
-        private bool isGray;
-
-        public bool IsGray
-        {
-            get { return isGray; }
-            set
-            {
-                isGray = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsGray"));
-            }
-        }
-
-        private double width;
-
-        public double Width
-        {
-            get { return width; }
-            set
-            {
-                width = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Width"));
-            }
-        }
-        private double height;
-
-        public double Height
-        {
-            get { return height; }
-            set
-            {
-                height = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Height"));
-            }
-        }
-
-        private double opactiy;
-
-        public double Opactiy
-        {
-            get { return opactiy; }
-            set
-            {
-                opactiy = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Opactiy"));
-            }
-        }
-        private int left;
-
-        public int Left
-        {
-            get { return left; }
-            set
-            {
-                left = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Opactiy"));
-            }
-        }
-
-        private int top;
-
-        public int Top
-        {
-            get { return top; }
-            set
-            {
-                top = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Top"));
-            }
-        }
-
-        private int scale;
-
-        public int Scale
-        {
-            get { return scale; }
-            set
-            {
-                scale = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Scale"));
-            }
-        }
-
-
-        private bool isLeaveHide;
-
-        public bool IsLeaveHide
-        {
-            get { return isLeaveHide; }
-            set
-            {
-                isLeaveHide = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsLeaveHide"));
-            }
-        }
-
-        private bool isLeaveHidePlay;
-        /// <summary>
-        /// 隐藏模式下是否离开暂停播放
-        /// </summary>
-        public bool IsLeaveHidePlay
-        {
-            get { return isLeaveHidePlay; }
-            set
-            {
-                isLeaveHidePlay = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsLeaveHidePlay"));
-            }
-        }
-
-        private ObservableCollection<BookmarkPage> bookmarkPages;
-
-        public ObservableCollection<BookmarkPage> BookmarkPages
-        {
-            get { return bookmarkPages; }
-            set
-            {
-                bookmarkPages = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("BookmarkPages"));
-            }
-        }
-
-
-    }
-    /// <summary>
-    /// 收藏页对象
-    /// </summary>
-    public class BookmarkPage
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-        private string address;
-
-        public string Address
-        {
-            get { return address; }
-            set
-            {
-                address = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Address"));
-            }
-        }
-
-        private string name;
-
-        public string Name
-        {
-            get { return name; }
-            set
-            {
-                name = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Address"));
-            }
-        }
-
     }
 }

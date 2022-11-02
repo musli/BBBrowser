@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Modules.Translation"
       xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
       mc:Ignorable="d"  
-      Title="MainPage" UseLayoutRounding="True" x:Name="mainPage" Tag="ddd">
+      Title="MainPage" UseLayoutRounding="True" x:Name="mainPage" Tag="ddd" Loaded="mainPage_Loaded">
     <Page.Resources>
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BTVConvert"/>
@@ -219,6 +219,7 @@
                                 <Hyperlink NavigateUri="https://github.com/musli/BBBrowser" Click="Hyperlink_Click">项目开源地址</Hyperlink>
                             </MenuItem.Header>
                         </MenuItem>
+                        <MenuItem Header="设置" Click="SettingMenuItem_Click"></MenuItem>
                     </ContextMenu>
                 </ToggleButton.ContextMenu>
             </ToggleButton>

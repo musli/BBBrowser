@@ -16,7 +16,7 @@
         Background="{x:Null}" 
         SourceInitialized="Window_SourceInitialized"
         PreviewKeyDown="Window_PreviewKeyDown"
-        MouseLeftButtonDown="Window_PreviewMouseLeftButtonDown">
+        MouseLeftButtonDown="Window_PreviewMouseLeftButtonDown" Loaded="Window_Loaded">
     <Grid>
 
     </Grid>

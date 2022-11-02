@@ -1,0 +1,39 @@
+﻿<Window x:Class="Modules.Translation.SettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Modules.Translation"
+        mc:Ignorable="d"
+          x:Name="win" Title="设置" Height="200" Width="400" Topmost="True"
+    WindowStartupLocation="CenterOwner" Loaded="win_Loaded">
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <ItemsControl Margin="10"   ItemsSource="{Binding HotKeys}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="7">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox  Grid.Column="0" Content="Ctrl" IsChecked="{Binding IsSelectCtrl}" IsEnabled="{Binding IsUsable}"/>
+                            <CheckBox  Grid.Column="2" Content="Shift" IsChecked="{Binding IsSelectShift}" IsEnabled="{Binding IsUsable}"/>
+                            <CheckBox  Grid.Column="4" Content="Alt" IsChecked="{Binding IsSelectAlt}" IsEnabled="{Binding IsUsable}"/>
+                            <ComboBox  Grid.Column="6" ItemsSource="{Binding Keys}" SelectedItem="{Binding SelectKey}" IsEnabled="{Binding IsUsable}"/>
+                            <CheckBox Grid.Column="8"   Content="{Binding Name}"   IsChecked="{Binding IsUsable}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Content="保存" Height="25" Width="80" Margin="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" x:Name="btnSaveSetting" Click="btnSaveSetting_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
