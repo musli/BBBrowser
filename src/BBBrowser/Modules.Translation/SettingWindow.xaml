@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Modules.Translation"
         mc:Ignorable="d"
-          x:Name="win" Title="设置" Height="200" Width="400" Topmost="True"
-    WindowStartupLocation="CenterOwner" Loaded="win_Loaded">
+          x:Name="win" Title="设置"  Height="200" Width="400" Topmost="True"
+    WindowStartupLocation="CenterOwner" Loaded="win_Loaded" SizeToContent="WidthAndHeight">
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <ItemsControl Margin="10"   ItemsSource="{Binding HotKeys}">
+        <StackPanel Margin="10">
+            <ItemsControl ItemsSource="{Binding HotKeys}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid Margin="7">
+                        <Grid Margin="0,10,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
@@ -33,7 +33,8 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Content="保存" Height="25" Width="80" Margin="10" HorizontalAlignment="Right" VerticalAlignment="Bottom" x:Name="btnSaveSetting" Click="btnSaveSetting_Click"/>
+            <CheckBox IsChecked="{Binding IsShowTaskBar}" Click="CheckBox_Click">是否显示在任务栏</CheckBox>
+            <Button Content="保存设置" Height="25" Width="80" HorizontalAlignment="Right" VerticalAlignment="Bottom" x:Name="btnSaveSetting" Click="btnSaveSetting_Click"/>
         </StackPanel>
     </Grid>
 </Window>

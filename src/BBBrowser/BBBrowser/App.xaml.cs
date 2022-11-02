@@ -1,4 +1,5 @@
-﻿using Modules.Translation;
+﻿using Common;
+using Modules.Translation;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -10,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace BBBrowser
@@ -53,6 +55,8 @@ namespace BBBrowser
             {
                 e.Handled = true; //把 Handled 属性设为true，表示此异常已处理，程序可以继续运行，不会强制退出      
                 MessageBox.Show("UI线程异常:" + e.Exception.Message);
+                var ex = e.Exception;
+                LogHelper.WriteLog($"App_DispatcherUnhandledException\r\n{ex.Message}\r\n{ex.Source}\r\n{ex.StackTrace}");
             }
             catch (Exception ex)
             {
@@ -79,12 +83,16 @@ namespace BBBrowser
                 sbEx.Append(e.ExceptionObject);
             }
             MessageBox.Show(sbEx.ToString());
+            var ex = (Exception)e.ExceptionObject;
+            LogHelper.WriteLog($"CurrentDomain_UnhandledException\r\n{ex.Message}\r\n{ex.Source}\r\n{ex.StackTrace}");
         }
 
         void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
         {
             //task线程内未处理捕获
             MessageBox.Show("Task线程异常：" + e.Exception.Message);
+            var ex = e.Exception;
+            LogHelper.WriteLog($"TaskScheduler_UnobservedTaskException\r\n{ex.Message}\r\n{ex.Source}\r\n{ex.StackTrace}");
             e.SetObserved();//设置该异常已察觉（这样处理后就不会引起程序崩溃）
         }
 

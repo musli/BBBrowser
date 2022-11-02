@@ -26,9 +26,16 @@ namespace Common
             hotKeyList.Add(new HotKeyEntity { Name = BBHotKey.减不透明度.ToString(), IsUsable = true, IsSelectCtrl = false, IsSelectAlt = true, IsSelectShift = false, SelectKey = KeyCode.Down });
             return hotKeyList;
         }
+        /// <summary>
+        /// 保存配置
+        /// </summary>
         public static event Action SaveConfig;
         public static void OnSaveConfig() => SaveConfig?.Invoke();
 
+
+        /// <summary>
+        /// 注册全局热键
+        /// </summary>
         public static event Func<ObservableCollection<HotKeyEntity>, bool> RegisterGlobalHotKeyEvent;
         public static bool OnRegisterGlobalHotKey(ObservableCollection<HotKeyEntity> hotKeyModelList)
         {

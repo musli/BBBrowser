@@ -52,7 +52,10 @@ namespace Modules.Translation
             //InitHotKey();
         }
 
-
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.MainWindow.ShowInTaskbar = Common.Common.Appearance.IsShowTaskBar;
+        }
         private void btnSaveSetting_Click(object sender, RoutedEventArgs e)
         {
             if (!Common.Common.OnRegisterGlobalHotKey(Common.Common.Appearance.HotKeys))return;
@@ -61,6 +64,7 @@ namespace Modules.Translation
         }
         #endregion
 
+       
     }
    
    

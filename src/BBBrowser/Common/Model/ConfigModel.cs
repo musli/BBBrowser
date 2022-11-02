@@ -44,7 +44,6 @@ namespace Common.Model
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsPhone"));
             }
         }
-
         private bool isGray;
         /// <summary>
         /// 是否黑白模式
@@ -153,6 +152,19 @@ namespace Common.Model
             {
                 isLeaveHide = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsLeaveHide"));
+            }
+        }
+        private bool isShowTaskBar;
+        /// <summary>
+        /// 是否显示在任务栏
+        /// </summary>
+        public bool IsShowTaskBar
+        {
+            get { return isShowTaskBar; }
+            set
+            {
+                isShowTaskBar = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsShowTaskBar"));
             }
         }
 

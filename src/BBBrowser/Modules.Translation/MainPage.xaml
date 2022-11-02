@@ -6,7 +6,7 @@
       xmlns:local="clr-namespace:Modules.Translation"
       xmlns:wpf="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
       mc:Ignorable="d"  
-      Title="MainPage" UseLayoutRounding="True" x:Name="mainPage" Tag="ddd" Loaded="mainPage_Loaded">
+      Title="MainPage" UseLayoutRounding="True" x:Name="mainPage" Tag="ddd">
     <Page.Resources>
         <ResourceDictionary>
             <BooleanToVisibilityConverter x:Key="BTVConvert"/>
@@ -54,7 +54,7 @@
                     <MenuItem Header="退出" Click="MenuItemExit_Click"/>
                 </ContextMenu>
             </Border.ContextMenu>
-            <ToggleButton x:Name="togBro" Grid.Row="1" Margin="30,1,1,1" Cursor="Hand">
+            <ToggleButton x:Name="togBro" Grid.Row="1" Margin="30,1,1,1" Cursor="Hand" Click="togBro_Click">
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton" BasedOn="{StaticResource ToggleButton.Task}">
                         <Style.Triggers>
@@ -66,22 +66,43 @@
                 </ToggleButton.Style>
                 <ToggleButton.ContextMenu>
                     <ContextMenu x:Name="menu" Opened="menu_Opened">
-                        <MenuItem>
+                        <MenuItem >
                             <MenuItem.Header>
-                                <WrapPanel>
-                                    <TextBlock Text="地址:"/>
-                                    <TextBox x:Name="txtAddress" MinWidth="80" MaxWidth="150" Style="{x:Null}" Text="{Binding Url,Mode=OneWay}" GotFocus="txtAddress_GotFocus">
+                                <WrapPanel Width="233">
+                                    <TextBlock Text="地址" VerticalAlignment="Center"/>
+                                    <TextBox x:Name="txtAddress" Margin="5,0,0,0" Width="171" Style="{x:Null}" Text="{Binding Url,Mode=OneWay}" GotFocus="txtAddress_GotFocus">
                                         <TextBox.InputBindings>
                                             <KeyBinding Command="{StaticResource Browser}"  Gesture="Enter"></KeyBinding>
                                         </TextBox.InputBindings>
                                     </TextBox>
-                                    <Button Content="跳转" Click="btnAddress_Click" Style="{x:Null}"></Button>
+                                    <Button Content="跳转" Margin="5,0,0,0" Click="btnAddress_Click" Style="{x:Null}"></Button>
                                 </WrapPanel>
                             </MenuItem.Header>
                         </MenuItem>
-                        <MenuItem Header="刷新" Click="MenuItemReflash_Click"/>
-                        <MenuItem Header="前进" Click="MenuItemForward_Click"/>
-                        <MenuItem Header="后退" Click="MenuItemBack_Click"/>
+                        <MenuItem Click="MenuItemReflash_Click">
+                            <MenuItem.Header>
+                                <Grid Width="233">
+                                    <TextBlock Text="刷新" ></TextBlock>
+                                    <TextBlock Text="F5" Foreground="Gray" HorizontalAlignment="Right"></TextBlock>
+                                </Grid>
+                            </MenuItem.Header>
+                        </MenuItem>
+                        <MenuItem Click="MenuItemBack_Click">
+                            <MenuItem.Header>
+                                <Grid Width="233">
+                                    <TextBlock Text="后退" ></TextBlock>
+                                    <TextBlock Text="F6" Foreground="Gray" HorizontalAlignment="Right"></TextBlock>
+                                </Grid>
+                            </MenuItem.Header>
+                        </MenuItem>
+                        <MenuItem Click="MenuItemForward_Click">
+                            <MenuItem.Header>
+                                <Grid Width="233">
+                                    <TextBlock Text="前进" ></TextBlock>
+                                    <TextBlock Text="F7" Foreground="Gray" HorizontalAlignment="Right"></TextBlock>
+                                </Grid>
+                            </MenuItem.Header>
+                        </MenuItem>
                         <MenuItem>
                             <MenuItem.Header>
                                 <WrapPanel>
@@ -93,9 +114,13 @@
                         </MenuItem>
                         <MenuItem>
                             <MenuItem.Header>
-                                <WrapPanel>
+                                <Grid Width="233">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
                                     <TextBlock Text="等比例缩放" VerticalAlignment="Center"/>
-                                    <ComboBox Binding.SourceUpdated="ComboBox_SourceUpdated"  SelectedIndex="{Binding Scale, NotifyOnSourceUpdated=True}" ToolTip="{Binding Scale}" VerticalAlignment="Center" >
+                                    <ComboBox Grid.Column="1" Binding.SourceUpdated="ComboBox_SourceUpdated"  SelectedIndex="{Binding Scale, NotifyOnSourceUpdated=True}" ToolTip="{Binding Scale}" VerticalAlignment="Center" >
                                         <ComboBox.Items>
                                             <ComboBoxItem Content="自由比例"/>
                                             <ComboBoxItem Content="2.4:1(电影)"/>
@@ -103,7 +128,7 @@
                                             <ComboBoxItem Content="21:9"/>
                                         </ComboBox.Items>
                                     </ComboBox>
-                                </WrapPanel>
+                                </Grid>
                             </MenuItem.Header>
                         </MenuItem>
                         <MenuItem>
@@ -252,14 +277,19 @@
                         <Grid  x:Name="ContentPanel" Width="{Binding ElementName=hoSli, Path=Value}" Height="{Binding ElementName=verSli, Path=Value}">
                             <!--html5test.com-->
                             <wpf:ChromiumWebBrowser x:Name="Browser" Opacity="{Binding ElementName=sliOp, Path=Value}" Address="{Binding Url}" FrameLoadEnd="Browser_FrameLoadEnd" PreviewMouseWheel="Browser_PreviewMouseWheel"  >
-
+                                <wpf:ChromiumWebBrowser.InputBindings>
+                                    <KeyBinding Key="F5" Command="{Binding ElementName=Browser, Path=ReLoadCommand}"></KeyBinding>
+                                    <KeyBinding Key="F6" Command="{Binding ElementName=Browser, Path=BackCommand}"></KeyBinding>
+                                    <KeyBinding Key="F7" Command="{Binding ElementName=Browser, Path=ForwardCommand}"></KeyBinding>
+                                </wpf:ChromiumWebBrowser.InputBindings>
                             </wpf:ChromiumWebBrowser>
                         </Grid>
                     </Viewbox>
-                    <WrapPanel VerticalAlignment="Bottom">
-                        <TextBox Text="{Binding ElementName=hoSli, Path=Value}"></TextBox>
-                        <TextBox Text="{Binding ElementName=verSli, Path=Value}"></TextBox>
+                    <WrapPanel  VerticalAlignment="Top" Margin="0,-50,0,0">
+                        <TextBox  Text="{Binding ElementName=hoSli, Path=Value}"></TextBox>
+                        <TextBox x:Name="txtdd" Text="{Binding ElementName=verSli, Path=Value}"></TextBox>
                     </WrapPanel>
+                    <WrapPanel x:Name="wrpHost" VerticalAlignment="Bottom"></WrapPanel>
                 </Grid>
             </Border>
         </Grid>

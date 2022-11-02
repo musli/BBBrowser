@@ -68,13 +68,20 @@ namespace Modules.Translation
 
 
             //每次注册热键的时候都保存到配置
-            Common.Common.SaveConfig += () =>{SaveConfig();};
+            Common.Common.SaveConfig += () => { SaveConfig(); };
+            //快捷键实现
+            Common.Common.ShowHide += () => { togBro.IsChecked = !togBro.IsChecked; };
+            Common.Common.OpacitySub += () => { Common.Common.Appearance.Opactiy -= 0.1; };
+            Common.Common.OpacityAdd += () => { Common.Common.Appearance.Opactiy += 0.1; };
 
             //程序运行的时候预先注册一次热键
-            settingWindow=new SettingWindow();
+            settingWindow = new SettingWindow();
             settingWindow.Owner = Application.Current.MainWindow;
             var result = Common.Common.OnRegisterGlobalHotKey(Common.Common.Appearance.HotKeys);
             if (!result) settingWindow.ShowDialog();
+
+            //设置是否显示任务栏
+            Application.Current.MainWindow.ShowInTaskbar = Common.Common.Appearance.IsShowTaskBar;
         }
 
 
@@ -85,7 +92,8 @@ namespace Modules.Translation
         {
             Common.Common.Appearance.Top = (int)Application.Current.MainWindow.Top;
             Common.Common.Appearance.Left = (int)Application.Current.MainWindow.Left;
-            Common.Common.Appearance.Url = Browser.Address;
+            if (Browser.Address != null)
+                Common.Common.Appearance.Url = Browser.Address;
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool"))
                 Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool");
             File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt", JsonConvert.SerializeObject(Common.Common.Appearance));
@@ -93,7 +101,6 @@ namespace Modules.Translation
         #endregion
 
         #region Events
-
         /// <summary>
         /// 退出
         /// </summary>
@@ -196,7 +203,7 @@ namespace Modules.Translation
         {
             SaveConfig();
 
-            Process.Start(AppDomain.CurrentDomain.BaseDirectory + "FloatingWindowTool.exe");
+            Process.Start(AppDomain.CurrentDomain.BaseDirectory + "BBBrowser.exe");
             Application.Current.Shutdown();
         }
         /// <summary>
@@ -381,6 +388,18 @@ namespace Modules.Translation
             settingWindow.Owner = Application.Current.MainWindow;
             settingWindow.ShowDialog();
         }
+        
+        /// <summary>
+        /// 常驻显示按钮按下时发生
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void togBro_Click(object sender, RoutedEventArgs e)
+        {
+            //给予界面控件焦点，以解决CEFBrowser中文输入不上的问题
+            if (togBro.IsChecked == true)
+                txtdd.Focus();
+        }
         #endregion
 
         #region Commands
@@ -454,14 +473,6 @@ namespace Modules.Translation
         }
 
         #endregion
-
-        private void mainPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            Common.Common.ShowHide += () => { togBro.IsChecked = !togBro.IsChecked; };
-            Common.Common.OpacitySub += () => { Common.Common.Appearance.Opactiy -= 0.1; };
-            Common.Common.OpacityAdd += () => { Common.Common.Appearance.Opactiy += 0.1; };
-        }
-
 
     }
 

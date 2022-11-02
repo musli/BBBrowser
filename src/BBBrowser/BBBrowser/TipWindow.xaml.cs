@@ -25,22 +25,86 @@ namespace BBBrowser
     /// </summary>
     public partial class TipWindow : Window
     {
+        #region 字段
         /// <summary>
         /// 当前窗口句柄
         /// </summary>
         private IntPtr m_Hwnd = new IntPtr();
+        /// <summary>
+        /// 记录快捷键注册项的唯一标识符
+        /// </summary>
+        private Dictionary<BBHotKey, int> m_HotKeySettings = new Dictionary<BBHotKey, int>();
+        #endregion
+
+        #region 属性
+
+        #endregion
+
+        #region 方法
         public TipWindow()
         {
             InitializeComponent();
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 Thread.Sleep(1000);
-                Dispatcher.Invoke(() => {
+                Dispatcher.Invoke(() =>
+                {
                     this.Topmost = true;
                     this.Activate();
                 });
             });
         }
+        /// <summary>
+        /// 初始化注册快捷键
+        /// </summary>
+        /// <param name="hotKeyModelList">待注册热键的项</param>
+        /// <returns>true:保存快捷键的值；false:弹出设置窗体</returns>
+        private bool InitHotKey(ObservableCollection<HotKeyEntity> hotKeyModelList = null)
+        {
+            var list = hotKeyModelList ?? Common.Common.LoadDefaultHotKey();
+            // 注册全局快捷键
+            string failList = HotKeyHelper.RegisterGlobalHotKey(list, new WindowInteropHelper(Application.Current.MainWindow).Handle, out m_HotKeySettings);
+            if (string.IsNullOrEmpty(failList)) return true;
 
+            MessageBoxResult mbResult = MessageBox.Show(string.Format("无法注册下列快捷键\n\r{0}是否要重新设置这些快捷键？", failList), "提示", MessageBoxButton.YesNo);
+
+            if (mbResult == MessageBoxResult.Yes) return false;
+
+            return true;
+        }
+        /// <summary>
+        /// 窗体回调函数，接收所有窗体消息的事件处理函数
+        /// </summary>
+        /// <param name="hWnd">窗口句柄</param>
+        /// <param name="msg">消息</param>
+        /// <param name="wideParam">附加参数1</param>
+        /// <param name="longParam">附加参数2</param>
+        /// <param name="handled">是否处理</param>
+        /// <returns>返回句柄</returns>
+        private IntPtr WndProc(IntPtr hWnd, int msg, IntPtr wideParam, IntPtr longParam, ref bool handled)
+        {
+            switch (msg)
+            {
+                case User.WM_HOTKEY:
+                    int sid = wideParam.ToInt32();
+                    if (sid == m_HotKeySettings[BBHotKey.显隐])
+                        Common.Common.OnShowHide();
+                    else if (sid == m_HotKeySettings[BBHotKey.减不透明度])
+                        Common.Common.OnOpacitySub();
+                    else if (sid == m_HotKeySettings[BBHotKey.加不透明度])
+                        Common.Common.OnOpacityAdd();
+                    handled = true;
+                    break;
+            }
+            return IntPtr.Zero;
+        }
+        #endregion
+
+        #region 事件
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Common.Common.RegisterGlobalHotKeyEvent += (e) => { return InitHotKey(e); };
+        }
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             //屏蔽alert+f4
@@ -68,92 +132,7 @@ namespace BBBrowser
             this.DragMove();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            Common.Common.RegisterGlobalHotKeyEvent += Common_RegisterGlobalHotKeyEvent;
-        }
+        #endregion
 
-
-        private bool Common_RegisterGlobalHotKeyEvent(ObservableCollection<HotKeyEntity> arg)
-        {
-            return InitHotKey(arg);
-        }
-
-        /// <summary>
-        /// 记录快捷键注册项的唯一标识符
-        /// </summary>
-        private Dictionary<BBHotKey, int> m_HotKeySettings = new Dictionary<BBHotKey, int>();
-        /// <summary>
-        /// 初始化注册快捷键
-        /// </summary>
-        /// <param name="hotKeyModelList">待注册热键的项</param>
-        /// <returns>true:保存快捷键的值；false:弹出设置窗体</returns>
-        private bool InitHotKey(ObservableCollection<HotKeyEntity> hotKeyModelList = null)
-        {
-            var list = hotKeyModelList ?? Common.Common.LoadDefaultHotKey();
-            // 注册全局快捷键
-            string failList = HotKeyHelper.RegisterGlobalHotKey(list, new WindowInteropHelper(Application.Current.MainWindow).Handle, out m_HotKeySettings);
-            if (string.IsNullOrEmpty(failList))
-                return true;
-            MessageBoxResult mbResult = MessageBox.Show(string.Format("无法注册下列快捷键\n\r{0}是否要重新设置这些快捷键？", failList), "提示", MessageBoxButton.YesNo);
-            // 弹出热键设置窗体
-            //var win = HotKeySettingsWindow.CreateInstance();
-            if (mbResult == MessageBoxResult.Yes)
-            {
-                return false;
-                //    if (!win.IsVisible)
-                //    {
-                //        win.ShowDialog();
-                //    }
-                //    else
-                //    {
-                //        win.Activate();
-                //    }
-                //    return false;
-            }
-
-            return true;
-        }
-        /// <summary>
-        /// 窗体回调函数，接收所有窗体消息的事件处理函数
-        /// </summary>
-        /// <param name="hWnd">窗口句柄</param>
-        /// <param name="msg">消息</param>
-        /// <param name="wideParam">附加参数1</param>
-        /// <param name="longParam">附加参数2</param>
-        /// <param name="handled">是否处理</param>
-        /// <returns>返回句柄</returns>
-        private IntPtr WndProc(IntPtr hWnd, int msg, IntPtr wideParam, IntPtr longParam, ref bool handled)
-        {
-            var hotkeySetting = new BBHotKey();
-            switch (msg)
-            {
-                case User.WM_HOTKEY:
-                    int sid = wideParam.ToInt32();
-                    if (sid == m_HotKeySettings[BBHotKey.显隐])
-                    {
-                        hotkeySetting = BBHotKey.显隐;
-                        Common.Common.OnShowHide();
-                        //TODO 执行全屏操作
-                    }
-                    else if (sid == m_HotKeySettings[BBHotKey.减不透明度])
-                    {
-                        hotkeySetting = BBHotKey.减不透明度;
-                        Common.Common.OnOpacitySub();
-                        //TODO 执行截图操作
-                    }
-                    else if (sid == m_HotKeySettings[BBHotKey.加不透明度])
-                    {
-                        hotkeySetting = BBHotKey.加不透明度;
-                        Common.Common.OnOpacityAdd();
-                        //TODO ......
-                    }
-
-                    Debug.WriteLine(string.Format("触发【{0}】快捷键", hotkeySetting));
-                    handled = true;
-                    break;
-            }
-            return IntPtr.Zero;
-        }
     }
 }
