@@ -93,6 +93,8 @@ namespace BBBrowser
                         Common.Common.OnOpacitySub();
                     else if (sid == m_HotKeySettings[BBHotKey.加不透明度])
                         Common.Common.OnOpacityAdd();
+                    else if (sid == m_HotKeySettings[BBHotKey.播放_暂停])
+                        Common.Common.OnPlayPuse();
                     handled = true;
                     break;
             }

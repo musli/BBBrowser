@@ -21,9 +21,10 @@ namespace Common
         public static ObservableCollection<HotKeyEntity> LoadDefaultHotKey()
         {
             var hotKeyList = new ObservableCollection<HotKeyEntity>();
-            hotKeyList.Add(new HotKeyEntity { Name = BBHotKey.显隐.ToString(), IsUsable = true, IsSelectCtrl = false, IsSelectAlt = true, IsSelectShift = false, SelectKey = KeyCode.C });
+            hotKeyList.Add(new HotKeyEntity { Name = BBHotKey.显隐.ToString(), IsUsable = true, IsSelectCtrl = false, IsSelectAlt = true, IsSelectShift = false, SelectKey = KeyCode.Q });
             hotKeyList.Add(new HotKeyEntity { Name = BBHotKey.加不透明度.ToString(), IsUsable = true, IsSelectCtrl = false, IsSelectAlt = true, IsSelectShift = false, SelectKey = KeyCode.Up });
             hotKeyList.Add(new HotKeyEntity { Name = BBHotKey.减不透明度.ToString(), IsUsable = true, IsSelectCtrl = false, IsSelectAlt = true, IsSelectShift = false, SelectKey = KeyCode.Down });
+            hotKeyList.Add(new HotKeyEntity { Name = BBHotKey.播放_暂停.ToString(), IsUsable = true, IsSelectCtrl = false, IsSelectAlt = true, IsSelectShift = false, SelectKey = KeyCode.P });
             return hotKeyList;
         }
         /// <summary>
@@ -66,6 +67,11 @@ namespace Common
         public static void OnOpacityAdd()
         {
             OpacityAdd?.Invoke();
+        }
+        public static event Action PlayPuse;
+        public static void OnPlayPuse()
+        {
+            PlayPuse?.Invoke();
         }
     }
 }

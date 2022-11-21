@@ -43,6 +43,10 @@ namespace Modules.Translation
                 Common.Common.Appearance = new ConfigModel() { Height = 500, Width = 800, Opactiy = 1, Url = "https://www.baidu.com", HotKeys = Common.Common.LoadDefaultHotKey() };
             //https://cg.163.com/index.html#/search?key=%E5%86%B3%E6%96%97%E9%93%BE%E6%8E%A5
 
+            //如果有新加的快捷键，则添加进本地配置
+            if (Common.Common.Appearance.HotKeys.Count < Common.Common.LoadDefaultHotKey().Count)
+                Common.Common.Appearance.HotKeys = Common.Common.LoadDefaultHotKey();
+
             CefSettings _settings = new CefSettings();
             if (Common.Common.Appearance.IsPhone)
                 _settings.UserAgent = "tv.danmaku.bili/6250300 (Linux; U; Android 11; zh_CN; V1824A; Build/RP1A.200720.012; Cronet/81.0.4044.156)";
@@ -73,6 +77,7 @@ namespace Modules.Translation
             Common.Common.ShowHide += () => { togBro.IsChecked = !togBro.IsChecked; };
             Common.Common.OpacitySub += () => { Common.Common.Appearance.Opactiy -= 0.1; };
             Common.Common.OpacityAdd += () => { Common.Common.Appearance.Opactiy += 0.1; };
+            Common.Common.PlayPuse += () => { PlayPuse(); };
 
             //程序运行的时候预先注册一次热键
             settingWindow = new SettingWindow();
@@ -97,6 +102,15 @@ namespace Modules.Translation
             if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool"))
                 Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool");
             File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt", JsonConvert.SerializeObject(Common.Common.Appearance));
+        }
+        /// <summary>
+        /// 播放暂停切换
+        /// </summary>
+        private void PlayPuse()
+        {
+            var CommandID = (int)AppComandCode.MEDIA_PLAY_PAUSE << 16;
+            IntPtr hwnd = new WindowInteropHelper(Application.Current.MainWindow).Handle;
+            User.SendMessage(hwnd, (uint)AppComandCode.WM_APPCOMMAND, hwnd, (IntPtr)CommandID);
         }
         #endregion
 
@@ -215,9 +229,7 @@ namespace Modules.Translation
         {
             if (Common.Common.Appearance.IsLeaveHidePlay)
             {
-                var CommandID = (int)AppComandCode.MEDIA_PLAY_PAUSE << 16;
-                IntPtr hwnd = new WindowInteropHelper(Application.Current.MainWindow).Handle;
-                User.SendMessage(hwnd, (uint)AppComandCode.WM_APPCOMMAND, hwnd, (IntPtr)CommandID);
+                PlayPuse();
             }
         }
 
@@ -373,7 +385,7 @@ namespace Modules.Translation
         private void aboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("软件名称：BB浏览器\r\n" +
-                "软件版本：v1.0\r\n" +
+                "软件版本：v1.5\r\n" +
                 "开发者：穆斯穆斯理", "关于");
         }
 
@@ -388,7 +400,7 @@ namespace Modules.Translation
             settingWindow.Owner = Application.Current.MainWindow;
             settingWindow.ShowDialog();
         }
-        
+
         /// <summary>
         /// 常驻显示按钮按下时发生
         /// </summary>
