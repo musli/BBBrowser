@@ -35,8 +35,9 @@ namespace Modules.Translation
         #region Methods
         public MainPage()
         {
+            //var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt";
 
-            var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt";
+            var path =AppDomain.CurrentDomain.BaseDirectory+"config.txt";
             if (File.Exists(path))
                 Common.Common.Appearance = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText(path));
             else
@@ -87,6 +88,8 @@ namespace Modules.Translation
 
             //设置是否显示任务栏
             Application.Current.MainWindow.ShowInTaskbar = Common.Common.Appearance.IsShowTaskBar;
+
+            togBro.IsChecked = true;
         }
 
 
@@ -99,9 +102,9 @@ namespace Modules.Translation
             Common.Common.Appearance.Left = (int)Application.Current.MainWindow.Left;
             if (Browser.Address != null)
                 Common.Common.Appearance.Url = Browser.Address;
-            if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool"))
-                Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool");
-            File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool\\config.txt", JsonConvert.SerializeObject(Common.Common.Appearance));
+            //if (!Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool"))
+            //    Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FloatingWindowTool");
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "config.txt", JsonConvert.SerializeObject(Common.Common.Appearance));
         }
         /// <summary>
         /// 播放暂停切换
